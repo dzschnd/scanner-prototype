@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import {
   createScannerInstance,
@@ -7,16 +7,16 @@ import {
   scanConfig,
 } from '../lib/scanner'
 
-const scannerElementId = 'qr-reader'
-
 type ScannerViewProps = {
   onScan: (value: string) => void
 }
 
 function ScannerView({ onScan }: ScannerViewProps) {
+  const scannerElementId = useId().replace(/:/g, '-')
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const isCompletingScanRef = useRef(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [decodeError, setDecodeError] = useState<string | null>(null)
 
   useEffect(() => {
     let isActive = true
@@ -35,21 +35,33 @@ function ScannerView({ onScan }: ScannerViewProps) {
             }
 
             isCompletingScanRef.current = true
+            setDecodeError(null)
 
             const activeScanner = scannerRef.current
             scannerRef.current = null
 
             if (activeScanner) {
-              void destroyScanner(activeScanner)
+              void (async () => {
+                await destroyScanner(activeScanner)
+                onScan(decodedText)
+              })()
+              return
             }
 
             onScan(decodedText)
           },
-          () => {},
+          () => {
+            if (!isCompletingScanRef.current) {
+              setDecodeError(
+                'Код не распознан. Наведите камеру ближе, выровняйте код по рамке и проверьте освещение.',
+              )
+            }
+          },
         )
 
         if (isActive) {
           setCameraError(null)
+          setDecodeError(null)
         }
       } catch (error) {
         await destroyScanner(scanner)
@@ -76,7 +88,7 @@ function ScannerView({ onScan }: ScannerViewProps) {
         void destroyScanner(scanner)
       }
     }
-  }, [onScan])
+  }, [onScan, scannerElementId])
 
   return (
     <main className="relative min-h-svh overflow-hidden bg-slate-950 md:grid md:min-h-svh md:place-items-center md:p-6">
@@ -94,6 +106,14 @@ function ScannerView({ onScan }: ScannerViewProps) {
           role="alert"
         >
           {cameraError}
+        </p>
+      ) : null}
+      {!cameraError && decodeError ? (
+        <p
+          className="absolute inset-x-4 top-4 m-0 rounded-2xl border border-amber-300/35 bg-slate-800/92 px-4 py-3.5 text-[0.9375rem] leading-[1.4] text-slate-50 backdrop-blur-[10px] md:left-1/2 md:w-[min(calc(100%-3rem),28rem)] md:-translate-x-1/2"
+          role="status"
+        >
+          {decodeError}
         </p>
       ) : null}
     </main>

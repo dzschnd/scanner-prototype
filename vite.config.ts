@@ -10,9 +10,6 @@ export default defineConfig({
 		react(),
 		VitePWA({
 			registerType: 'autoUpdate',
-			workbox: {
-				globPatterns: ['**/*.{html,css,js,ico,png,svg}'],
-			},
 			manifest: {
 				name: 'Сканер АНКФ/Лахта Склад',
 				short_name: 'Сканер',
