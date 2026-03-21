@@ -1,19 +1,29 @@
 import { defineConfig } from 'vite'
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vite.dev/config/
 export default defineConfig({
-  base: '/scanner-prototype/',
-  plugins: [
-    tailwindcss(),
-    react(),
-    babel({ presets: [reactCompilerPreset()] }),
-  ],
-  server: {
-    host: '0.0.0.0',
-    port: 5173,
-    allowedHosts: ['sloppier-mesodont-hien.ngrok-free.dev'],
-  },
+	base: '/scanner-prototype/',
+	plugins: [
+		tailwindcss(),
+		react(),
+		VitePWA({
+			registerType: 'autoUpdate',
+			workbox: {
+				globPatterns: ['**/*.{html,css,js,ico,png,svg}'],
+			},
+			manifest: {
+				name: 'Сканер АНКФ/Лахта Склад',
+				short_name: 'Сканер',
+				description: 'Прототип PWA-сканера для интеграции «АНКФ» и «Лахта Склад»',
+				theme_color: '#0f172a',
+				background_color: '#0f172a',
+				display: 'standalone',
+				start_url: '/scanner-prototype/',
+				scope: '/scanner-prototype/',
+				"icons": [{ "purpose": "maskable", "sizes": "512x512", "src": "icon512_maskable.png", "type": "image/png" }, { "purpose": "any", "sizes": "512x512", "src": "icon512_rounded.png", "type": "image/png" }],
+			},
+		}),
+	],
 })
