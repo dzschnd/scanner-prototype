@@ -1,12 +1,12 @@
 import { Html5Qrcode, type Html5QrcodeCameraScanConfig } from 'html5-qrcode'
 
 export const scanConfig: Html5QrcodeCameraScanConfig = {
-	fps: 20,
+	fps: 10,
 }
 
 export function createScannerInstance(elementId: string): Html5Qrcode {
 	return new Html5Qrcode(elementId, {
-		useBarCodeDetectorIfSupported: false,
+		useBarCodeDetectorIfSupported: true,
 		verbose: false,
 	})
 }
