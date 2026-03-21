@@ -11,6 +11,42 @@ type ScannerViewProps = {
 	onScan: (value: string) => void
 }
 
+const cameraStartupTimeoutMs = 3500
+
+function isVideoStreamReady(elementId: string): boolean {
+	const scannerElement = document.getElementById(elementId)
+	const videoElement = scannerElement?.querySelector('video')
+
+	if (!videoElement) {
+		return false
+	}
+
+	return (
+		videoElement.videoWidth > 0 &&
+		videoElement.videoHeight > 0 &&
+		videoElement.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
+	)
+}
+
+async function waitForVideoStream(
+	elementId: string,
+	timeoutMs: number,
+): Promise<boolean> {
+	const startedAt = window.performance.now()
+
+	while (window.performance.now() - startedAt < timeoutMs) {
+		if (isVideoStreamReady(elementId)) {
+			return true
+		}
+
+		await new Promise<void>((resolve) => {
+			window.setTimeout(resolve, 100)
+		})
+	}
+
+	return isVideoStreamReady(elementId)
+}
+
 function ScannerView({ onScan }: ScannerViewProps) {
 	const scannerElementId = useId().replace(/:/g, '-')
 	const scannerRef = useRef<Html5Qrcode | null>(null)
@@ -91,6 +127,27 @@ function ScannerView({ onScan }: ScannerViewProps) {
 						}
 					},
 				)
+
+				const hasVideoStream = await waitForVideoStream(
+					scannerElementId,
+					cameraStartupTimeoutMs,
+				)
+
+				if (!hasVideoStream) {
+					await destroyScanner(scanner)
+
+					if (scannerRef.current === scanner) {
+						scannerRef.current = null
+					}
+
+					if (isActive) {
+						setCameraError(
+							'Не удалось запустить камеру. Возможно, она уже используется другим приложением или вкладкой.',
+						)
+					}
+
+					return
+				}
 
 				if (isActive) {
 					setCameraError(null)

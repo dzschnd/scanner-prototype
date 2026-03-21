@@ -6,7 +6,6 @@ export const scanConfig: Html5QrcodeCameraScanConfig = {
 
 export function createScannerInstance(elementId: string): Html5Qrcode {
 	return new Html5Qrcode(elementId, {
-		useBarCodeDetectorIfSupported: true,
 		verbose: false,
 	})
 }
