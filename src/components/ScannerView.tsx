@@ -15,11 +15,46 @@ function ScannerView({ onScan }: ScannerViewProps) {
   const scannerElementId = useId().replace(/:/g, '-')
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const isCompletingScanRef = useRef(false)
+  const decodeErrorTimeoutRef = useRef<number | null>(null)
+  const hasShownDecodeErrorRef = useRef(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [decodeError, setDecodeError] = useState<string | null>(null)
 
   useEffect(() => {
     let isActive = true
+
+    const clearDecodeErrorFeedback = () => {
+      if (decodeErrorTimeoutRef.current !== null) {
+        window.clearTimeout(decodeErrorTimeoutRef.current)
+        decodeErrorTimeoutRef.current = null
+      }
+
+      hasShownDecodeErrorRef.current = false
+
+      if (isActive) {
+        setDecodeError(null)
+      }
+    }
+
+    const scheduleDecodeErrorFeedback = () => {
+      if (
+        decodeErrorTimeoutRef.current !== null ||
+        hasShownDecodeErrorRef.current
+      ) {
+        return
+      }
+
+      decodeErrorTimeoutRef.current = window.setTimeout(() => {
+        decodeErrorTimeoutRef.current = null
+        hasShownDecodeErrorRef.current = true
+
+        if (isActive && !isCompletingScanRef.current) {
+          setDecodeError(
+            'Код не распознан. Наведите камеру ближе, выровняйте код по рамке и проверьте освещение.',
+          )
+        }
+      }, 1200)
+    }
 
     const startScanner = async () => {
       const scanner = createScannerInstance(scannerElementId)
@@ -35,7 +70,7 @@ function ScannerView({ onScan }: ScannerViewProps) {
             }
 
             isCompletingScanRef.current = true
-            setDecodeError(null)
+            clearDecodeErrorFeedback()
 
             const activeScanner = scannerRef.current
             scannerRef.current = null
@@ -52,16 +87,14 @@ function ScannerView({ onScan }: ScannerViewProps) {
           },
           () => {
             if (!isCompletingScanRef.current) {
-              setDecodeError(
-                'Код не распознан. Наведите камеру ближе, выровняйте код по рамке и проверьте освещение.',
-              )
+              scheduleDecodeErrorFeedback()
             }
           },
         )
 
         if (isActive) {
           setCameraError(null)
-          setDecodeError(null)
+          clearDecodeErrorFeedback()
         }
       } catch (error) {
         await destroyScanner(scanner)
@@ -80,6 +113,11 @@ function ScannerView({ onScan }: ScannerViewProps) {
 
     return () => {
       isActive = false
+
+      if (decodeErrorTimeoutRef.current !== null) {
+        window.clearTimeout(decodeErrorTimeoutRef.current)
+        decodeErrorTimeoutRef.current = null
+      }
 
       const scanner = scannerRef.current
       scannerRef.current = null
