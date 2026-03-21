@@ -53,7 +53,7 @@ function ScannerView({ onScan }: ScannerViewProps) {
 						'Код не распознан. Наведите камеру ближе, выровняйте код по рамке и проверьте освещение.',
 					)
 				}
-			}, 5000)
+			}, 2400)
 		}
 
 		const startScanner = async () => {
