@@ -21,6 +21,11 @@ export default defineConfig({
 				scope: '/scanner-prototype/',
 				"icons": [{ "purpose": "maskable", "sizes": "512x512", "src": "icon512_maskable.png", "type": "image/png" }, { "purpose": "any", "sizes": "512x512", "src": "icon512_rounded.png", "type": "image/png" }],
 			},
-		}),
+			}),
 	],
+	server: {
+		host: '0.0.0.0',
+		port: 5173,
+		allowedHosts: ['sloppier-mesodont-hien.ngrok-free.dev'],
+	},
 })

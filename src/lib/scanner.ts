@@ -12,6 +12,43 @@ export function createScannerInstance(elementId: string): Html5Qrcode {
 }
 
 export function getCameraErrorMessage(error: unknown): string {
+	const errorMessage =
+		error instanceof Error
+			? error.message.trim()
+			: typeof error === 'string'
+				? error.trim()
+				: ''
+
+	const normalizedErrorMessage = errorMessage.toLowerCase()
+
+	if (
+		normalizedErrorMessage.includes('notreadableerror') ||
+		normalizedErrorMessage.includes('could not start video source') ||
+		normalizedErrorMessage.includes('track start failed') ||
+		normalizedErrorMessage.includes('device in use') ||
+		normalizedErrorMessage.includes('device is in use') ||
+		normalizedErrorMessage.includes('camera is already in use') ||
+		normalizedErrorMessage.includes('could not access video stream')
+	) {
+		return 'Камера уже используется другим приложением или вкладкой. Закройте их и попробуйте снова.'
+	}
+
+	if (
+		normalizedErrorMessage.includes('notallowederror') ||
+		normalizedErrorMessage.includes('permission denied') ||
+		normalizedErrorMessage.includes('permissiondismissederror')
+	) {
+		return 'Доступ к камере запрещен. Разрешите использование камеры в настройках браузера и попробуйте снова.'
+	}
+
+	if (
+		normalizedErrorMessage.includes('notfounderror') ||
+		normalizedErrorMessage.includes('requested device not found') ||
+		normalizedErrorMessage.includes('no camera found')
+	) {
+		return 'Камера не найдена на устройстве.'
+	}
+
 	if (error instanceof Error && error.message.trim().length > 0) {
 		return error.message
 	}
@@ -20,7 +57,7 @@ export function getCameraErrorMessage(error: unknown): string {
 		return error
 	}
 
-	return 'Camera access is unavailable.'
+	return 'Не удалось получить доступ к камере.'
 }
 
 export async function destroyScanner(scanner: Html5Qrcode): Promise<void> {
