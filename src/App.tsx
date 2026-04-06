@@ -4,7 +4,7 @@ import ScannerView from './components/ScannerView'
 import AnkfCard from './components/AnkfCard'
 import LahtaCard from './components/LahtaCard'
 import { fetchData } from './api'
-import DebugPanel from './components/DebugPanel'
+// import DebugPanel from './components/DebugPanel'
 
 function App() {
   const [scannedValue, setScannedValue] = useState<string | null>(null)
