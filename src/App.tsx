@@ -4,52 +4,13 @@ import ScannerView from './components/ScannerView'
 import AnkfCard from './components/AnkfCard'
 import LahtaCard from './components/LahtaCard'
 import { fetchData } from './api'
+import DebugPanel from './components/DebugPanel'
 
 function App() {
   const [scannedValue, setScannedValue] = useState<string | null>(null)
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const [debugInput, setDebugInput] = useState('')
-  const handleManualFetch = () => {
-  if (!debugInput.trim()) return
 
-  setScannedValue(debugInput.trim())
-}
-const DebugPanel = (
-  <div style={{
-    position: 'fixed',
-    bottom: 20,
-    left: 20,
-    background: '#111',
-    padding: 12,
-    borderRadius: 8,
-    color: 'white',
-    zIndex: 9999,
-    width: 300
-  }}>
-    <div style={{ marginBottom: 8 }}>
-      <b>Debug QR input</b>
-    </div>
-
-    <input
-      value={debugInput}
-      onChange={(e) => setDebugInput(e.target.value)}
-      placeholder="Введите QR (ankf:... / LHT-...)"
-      style={{ width: '100%', marginBottom: 8, padding: 6 }}
-    />
-
-    <button
-      onClick={handleManualFetch}
-      style={{
-        width: '100%',
-        padding: 6,
-        cursor: 'pointer'
-      }}
-    >
-      Отправить
-    </button>
-  </div>
-)
 
 useEffect(() => {
   if (!scannedValue) return;
@@ -126,7 +87,8 @@ useEffect(() => {
 
  return (
   <>
-    {DebugPanel}
+  {/* Ниже панель для отладки (ввод QR вручную, без использования камеры). Раскомментируйте для использования */}
+    {/* <DebugPanel onSubmit={setScannedValue} /> */}
     <ScannerView onScan={setScannedValue} />
   </>
 )
